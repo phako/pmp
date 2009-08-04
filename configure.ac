@@ -1,0 +1,45 @@
+AC_INIT([pmp], [0.1], [mail@jensge.org], [pmp])
+AM_INIT_AUTOMAKE([1.11 dist-bzip2])
+AC_CONFIG_SRCDIR([pmp/main.vala])
+AC_CONFIG_HEADERS([config.h])
+AM_MAINTAINER_MODE
+
+AC_PROG_CC
+AM_PROG_CC_C_O
+AC_DISABLE_STATIC
+AM_PROG_LIBTOOL
+AC_CONFIG_MACRO_DIR([m4])
+
+AC_SUBST(CFLAGS)
+AC_SUBST(CPPFLAGS)
+AC_SUBST(LDFLAGS)
+
+VALA_REQUIRED=0.7.5
+GTK_REQUIRED=2.16
+WEBKIT_REQUIRED=1.1.11
+
+PKG_CHECK_MODULES(LIBGTK, gtk+-2.0 >= $GTK_REQUIRED)
+PKG_CHECK_MODULES(WEBKIT, webkit-1.0 >= $WEBKIT_REQUIRED)
+
+AC_ARG_ENABLE(vala,
+              [  --enable vala          enable checks for vala],,
+              enable_vala=no)
+
+if test "x$enable_vala" = "xyes" ; then
+    AM_PROG_VALAC([$VALA_REQUIRED])
+
+    if test "x$VALAC" = "x" ; then
+        AC_MSG_ERROR([Cannot find the "valac" compiler in your PATH])
+    fi
+
+    VAPIDIR=$(pkg-config --variable=vapidir vala-1.0)
+    AC_CHECK_FILE("${VAPIDIR}/gtk+-2.0.vapi",
+                 true,
+                 [AC_MSG_ERROR("Unable to find Vala bindings for gtk+-2.0")])
+    AC_CHECK_FILE("${VAPIDIR}/webkit-1.0.vapi",
+                 true,
+                 [AC_MSG_ERROR("Unable to find Vala bindings for webkit-1.0")])
+fi
+
+AM_SILENT_RULES([yes])
+AC_OUTPUT([Makefile])
