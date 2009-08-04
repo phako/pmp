@@ -12,14 +12,20 @@ pmp_pmp_SOURCES = \
 AM_VALAFLAGS = \
 			   --pkg webkit-1.0 \
 			   --pkg gtk+-2.0 \
+			   --pkg libxml-2.0 \
+			   --pkg libsoup-2.4 \
 			   --thread
 
 AM_CFLAGS = \
 			$(LIBGTK_CFLAGS) \
 			$(WEBKIT_CFLAGS) \
+			$(LIBXML_CFLAGS) \
+			$(LIBSOUP_CFLAGS) \
 			$(NULL)
 
 pmp_pmp_LDFLAGS = \
 				  $(LIBGTK_LIBS) \
 				  $(WEBKIT_LIBS) \
+				  $(LIBXML_LIBS) \
+				  $(LIBSOUP_LIBS) \
 				  $(NULL)
