@@ -26,8 +26,8 @@ public class Pmp.MainWindow : Window {
     private Statusbar statusbar;
     private uint context_id;
 
-    public MainWindow() {
-        this.title = "PMP - Poor man's Prism";
+    public MainWindow(string title) {
+        this.title = "PMP - Poor man's Prism: %s".printf(title);
         set_default_size (1024, 768);
         var vbox = new VBox (false, 5);
 

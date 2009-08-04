@@ -26,9 +26,10 @@ string mode;
 string name;
 string uri;
 bool create_desktop;
+string icon_file;
 
 const OptionEntry[] options = {
-    { "mode", 'm', 0, OptionArg.STRING, ref mode, "mode to run pmp in (create, run, delete)", "MODE" },
+    { "mode", 'm', 0, OptionArg.STRING, ref mode, "mode to run pmp in (create, run, delete, list, gui)", "MODE" },
     { "name", 'n', 0, OptionArg.STRING, ref name, "name of edge", "NAME" },
     { null }
 };
@@ -36,6 +37,7 @@ const OptionEntry[] options = {
 const OptionEntry[] create_options = {
     { "uri", 'u', 0, OptionArg.STRING, ref uri, "uri of the website to edge", "URI" },
     { "desktop", 'd', 0, OptionArg.NONE, ref create_desktop, "create desktop entry", null },
+    { "icon", 'i', 0, OptionArg.FILENAME, ref icon_file, "use ICON as icon (use :favicon for the site's favicon", "ICON" },
     { null }
 };
 
@@ -47,8 +49,7 @@ int main(string[] args) {
     opt_ctx.add_group(Gtk.get_option_group (true));
 
     OptionGroup option_group = new OptionGroup("create", "Options in create mode",
-    "Options for creating edges",
-    null, null);
+            "Options for creating edges", null, null);
     option_group.add_entries(create_options);
     opt_ctx.add_group((owned)option_group);
     try {
@@ -56,11 +57,36 @@ int main(string[] args) {
 
         switch (mode) {
             case "create":
+                if (name != null) {
+                    if (uri != null) {
+                        var edge = new Edge(name);
+                        edge.set_uri (uri);
+                        try {
+                            edge.save ();
+                        } catch (GLib.Error err) {
+                            print("Error: Failed to save edge: %s\n",
+                                err.message);
+                        }
+                    }
+                    else {
+                        print("Error: No uri given\n");
+                    }
+                }
+                else {
+                    print("Error: No name given\n");
+                }
                 break;
             case "run":
-                var window = new MainWindow ();
-                window.start(name);
-                Gtk.main ();
+                var edge = new Edge(name);
+                try {
+                    edge.load();
+                    var window = new MainWindow (edge.get_name());
+                    window.start(edge.get_uri());
+                    Gtk.main ();
+                }
+                catch (GLib.Error err) {
+                    print("Failed to load edge: %s\n", err.message);
+                }
                 break;
             case "delete":
                 break;
