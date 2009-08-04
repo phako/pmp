@@ -23,16 +23,31 @@ using WebKit;
 
 public class Pmp.MainWindow : Window {
     private WebView web_view;
+    private Statusbar statusbar;
+    private uint context_id;
 
     public MainWindow() {
         this.title = "PMP - Poor man's Prism";
         set_default_size (1024, 768);
+        var vbox = new VBox (false, 5);
 
         this.web_view = new WebView();
-        this.add (web_view);
+        this.add (vbox);
+        this.statusbar = new Statusbar();
+        this.statusbar.has_resize_grip = false;
+        this.context_id = this.statusbar.get_context_id ("pmp_progress");
+        this.web_view.load_progress_changed.connect (on_load_progress);
+
+        vbox.pack_start (web_view, true, true, 0);
+        vbox.pack_end (this.statusbar, false, false, 0);
 
         this.destroy.connect(Gtk.main_quit);
         show_all();
+    }
+
+    public void on_load_progress (int p0) {
+        this.statusbar.push (this.context_id,
+                             "%3d%%".printf(p0));
     }
 
     public void start(string url) {
