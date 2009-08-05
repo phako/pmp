@@ -6,6 +6,7 @@ bin_PROGRAMS = pmp/pmp
 pmp_pmp_SOURCES = \
 				  pmp/Edge.vala \
 				  pmp/MainWindow.vala \
+				  pmp/FaviconDownloader.vala \
 				  pmp/main.vala \
 				  $(NULL)
 

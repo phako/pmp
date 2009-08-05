@@ -26,13 +26,16 @@ public class Pmp.Edge : Object {
     private string name;
     private string file_path;
     private KeyFile settings;
+    private string edge_path;
 
     public Edge(string name) {
         this.name = name;
-        this.file_path = Path.build_filename (
+        this.edge_path = Path.build_filename (
             Environment.get_user_config_dir(),
             Environment.get_prgname(),
-            name,
+            name);
+        this.file_path = Path.build_filename (
+            this.edge_path,
             "edge.conf");
         settings = new KeyFile ();
         debug("Filename: %s", this.file_path);
@@ -56,9 +59,7 @@ public class Pmp.Edge : Object {
     public string get_name () { return this.name; }
 
     public void save() throws GLib.Error {
-        var dir = Path.get_dirname (this.file_path);
-        debug ("Direcotry: %s", dir);
-        if (DirUtils.create_with_parents (dir, 0700) == 0) {
+        if (DirUtils.create_with_parents (this.edge_path, 0700) == 0) {
             var file = File.new_for_commandline_arg (this.file_path);
             var contents = this.settings.to_data();
             file.replace_contents (contents,
@@ -72,5 +73,11 @@ public class Pmp.Edge : Object {
         else {
             warning ("Failed to create drectory");
         }
+    }
+
+    public File get_default_icon_file() {
+        return File.new_for_commandline_arg (Path.build_filename (
+                                             this.edge_path,
+                                             "favicon.ico"));
     }
 }

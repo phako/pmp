@@ -30,8 +30,6 @@ string uri;
 bool create_desktop;
 string icon_file;
 MainLoop loop;
-Message msg;
-Message msg2;
 
 const OptionEntry[] options = {
     { "mode", 'm', 0, OptionArg.STRING, ref mode, "mode to run pmp in (create, run, delete, list, gui)", "MODE" },
@@ -46,71 +44,13 @@ const OptionEntry[] create_options = {
     { null }
 };
 
-void on_favicon_done(Session session, Message message) {
-    if (message.status_code == 200) {
-        var f = File.new_for_path ("/tmp/favicon.ico");
-        f.replace_contents (message.response_body.data,
-                            (size_t)message.response_body.length,
-                            null,
-                            false,
-                            FileCreateFlags.PRIVATE,
-                            null,
-                            null);
-    }
+void on_fileicon_done() {
+    debug("Download done");
     loop.quit();
 }
 
-void on_message_done (Session session, Message message) {
-    if (message.status_code != 200) {
-        warning ("Failed to access uri %s: %s",
-                 message.uri.to_string(false),
-                 message.reason_phrase);
-        loop.quit();
-        return;
-    }
-    unowned MessageBody body = message.response_body;
-    MatchInfo mi;
-    var fav_re = new Regex
-            ("<link\\s+rel\\s*=\\s*\"(shortcut )?icon[^>]+>",
-             RegexCompileFlags.CASELESS);
-    if (fav_re.match (body.data, RegexMatchFlags.ANCHORED, out mi)) {
-        var icon = mi.fetch (0);
-        if (!icon.has_suffix ("/>")) {
-            icon += "</link>";
-        }
-
-        Doc *doc = Parser.parse_doc (icon);
-        if (doc != null) {
-            Xml.Node *node = doc->get_root_element ();
-            if (node != null) {
-                Attr *attr = node->has_prop("href");
-                if (attr != null) {
-                    msg2 = new Message ("GET", attr->children->content);
-                    debug ("Trying to download %s", attr->children->content);
-                    session.queue_message ((owned)msg2, on_favicon_done);
-                    return;
-                }
-            }
-
-            delete doc;
-        }
-    }
-    else {
-        debug("No special favicon link found");
-        var s = message.uri.to_string(false);
-        var t = message.uri.to_string(true);
-        string new_uri;
-        if (t != "/") {
-            new_uri = s.replace(t, "") + "/favicon.ico";
-        }
-        else {
-            new_uri = s + "favicon.ico";
-        }
-        msg2 = new Message ("GET", new_uri);
-        debug ("Trying to download %s", new_uri);
-        session.queue_message ((owned)msg2, on_favicon_done);
-        return;
-    }
+void on_fileicon_error() {
+    warning("Download error");
     loop.quit();
 }
 
@@ -135,9 +75,11 @@ int main(string[] args) {
                         edge.set_uri (uri);
                         if (icon_file != null) {
                             if (icon_file == ":favicon") {
-                                var session = new SessionSync ();
-                                msg = new Message ("GET", uri);
-                                session.queue_message ((owned)msg, on_message_done);
+                                var dld = new FaviconDownloader (uri);
+                                var file = edge.get_default_icon_file();
+                                dld.run(file);
+                                dld.done.connect(on_fileicon_done);
+                                dld.error.connect(on_fileicon_error);
                                 loop = new MainLoop (null, false);
                                 loop.run();
                             }
