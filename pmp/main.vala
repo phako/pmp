@@ -20,16 +20,11 @@
 
 
 using Gtk;
+using Gdk;
 using Pmp;
-using Soup;
-using Xml;
 
 string mode;
 string name;
-string uri;
-bool create_desktop;
-string icon_file;
-MainLoop loop;
 
 const OptionEntry[] options = {
     { "mode", 'm', 0, OptionArg.STRING, ref mode, "mode to run pmp in (create, run, delete, list, gui)", "MODE" },
@@ -37,73 +32,27 @@ const OptionEntry[] options = {
     { null }
 };
 
-const OptionEntry[] create_options = {
-    { "uri", 'u', 0, OptionArg.STRING, ref uri, "uri of the website to edge", "URI" },
-    { "desktop", 'd', 0, OptionArg.NONE, ref create_desktop, "create desktop entry", null },
-    { "icon", 'i', 0, OptionArg.FILENAME, ref icon_file, "use ICON as icon (use :favicon for the site's favicon", "ICON" },
-    { null }
-};
-
-void on_fileicon_done() {
-    debug("Download done");
-    loop.quit();
-}
-
-void on_fileicon_error() {
-    warning("Download error");
-    loop.quit();
-}
-
 int main(string[] args) {
     var opt_ctx = new OptionContext("- Poor man's prism");
     opt_ctx.set_help_enabled (true);
     opt_ctx.add_main_entries (options, null);
     opt_ctx.add_group(Gtk.get_option_group (true));
 
-    OptionGroup option_group = new OptionGroup("create", "Options in create mode",
-            "Options for creating edges", null, null);
-    option_group.add_entries(create_options);
-    opt_ctx.add_group((owned)option_group);
     try {
         opt_ctx.parse (ref args);
 
         switch (mode) {
-            case "create":
-                if (name != null) {
-                    if (uri != null) {
-                        var edge = new Edge(name);
-                        edge.set_uri (uri);
-                        if (icon_file != null) {
-                            if (icon_file == ":favicon") {
-                                var dld = new FaviconDownloader (uri);
-                                var file = edge.get_default_icon_file();
-                                dld.run(file);
-                                dld.done.connect(on_fileicon_done);
-                                dld.error.connect(on_fileicon_error);
-                                loop = new MainLoop (null, false);
-                                loop.run();
-                            }
-                        }
-                        try {
-                            edge.save ();
-                        } catch (GLib.Error err) {
-                            print("Error: Failed to save edge: %s\n",
-                                err.message);
-                        }
-                    }
-                    else {
-                        print("Error: No uri given\n");
-                    }
-                }
-                else {
-                    print("Error: No name given\n");
-                }
-                break;
             case "run":
                 var edge = new Edge(name);
                 try {
                     edge.load();
                     var window = new MainWindow (edge.get_name());
+                    var icon = edge.get_icon ();
+                    if (icon != null) {
+                        var icon_list = new List<Pixbuf>();
+                        icon_list.append(new Pixbuf.from_file (icon));
+                        window.set_icon_list (icon_list);
+                    }
                     window.start(edge.get_uri());
                     Gtk.main ();
                 }

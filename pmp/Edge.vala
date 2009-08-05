@@ -32,7 +32,7 @@ public class Pmp.Edge : Object {
         this.name = name;
         this.edge_path = Path.build_filename (
             Environment.get_user_config_dir(),
-            Environment.get_prgname(),
+            "pmp",
             name);
         this.file_path = Path.build_filename (
             this.edge_path,
@@ -79,5 +79,14 @@ public class Pmp.Edge : Object {
         return File.new_for_commandline_arg (Path.build_filename (
                                              this.edge_path,
                                              "favicon.ico"));
+    }
+
+    public void set_use_default_icon() {
+        settings.set_string("Edge", "icon",
+                get_default_icon_file().get_path());
+    }
+
+    public string get_icon() {
+        return settings.get_string("Edge", "icon");
     }
 }

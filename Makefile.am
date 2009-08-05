@@ -2,13 +2,33 @@ AUTOMAKE_OPTIONS = subdir-objects
 ACLOCAL_AMFLAGS=-I m4
 
 NULL=
-bin_PROGRAMS = pmp/pmp
+bin_PROGRAMS = \
+			   pmp/pmp \
+			   pmp/pmp-create \
+			   $(NULL)
+
 pmp_pmp_SOURCES = \
 				  pmp/Edge.vala \
 				  pmp/MainWindow.vala \
-				  pmp/FaviconDownloader.vala \
 				  pmp/main.vala \
 				  $(NULL)
+
+pmp_pmp_create_SOURCES = \
+						 pmp/Edge.vala \
+						 pmp/FaviconDownloader.vala \
+						 pmp/create.vala \
+						 $(NULL)
+
+pmp_pmp_create_LDFLAGS = \
+				  $(LIBXML_LIBS) \
+				  $(LIBSOUP_LIBS) \
+				  $(NULL)
+
+pmp_pmp_create_VALAFLAGS = \
+						   --pkg libxml-2.0 \
+						   --pkg libsoup-2.4 \
+						   --thread \
+						   $(NULL)
 
 AM_VALAFLAGS = \
 			   --pkg webkit-1.0 \
