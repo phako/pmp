@@ -23,11 +23,9 @@ using Gtk;
 using Gdk;
 using Pmp;
 
-string mode;
 string name;
 
 const OptionEntry[] options = {
-    { "mode", 'm', 0, OptionArg.STRING, ref mode, "mode to run pmp in (create, run, delete, list, gui)", "MODE" },
     { "name", 'n', 0, OptionArg.STRING, ref name, "name of edge", "NAME" },
     { null }
 };
@@ -41,30 +39,23 @@ int main(string[] args) {
     try {
         opt_ctx.parse (ref args);
 
-        switch (mode) {
-            case "run":
-                var edge = new Edge(name);
-                try {
-                    edge.load();
-                    var window = new MainWindow (edge.get_name());
-                    var icon = edge.get_icon ();
-                    if (icon != null) {
-                        var icon_list = new List<Pixbuf>();
-                        icon_list.append(new Pixbuf.from_file (icon));
-                        window.set_icon_list (icon_list);
-                    }
-                    window.start(edge.get_uri());
-                    Gtk.main ();
+        if (name != null) {
+            var edge = new Edge(name);
+            try {
+                edge.load();
+                var window = new MainWindow (edge.get_name());
+                var icon = edge.get_icon ();
+                if (icon != null) {
+                    var icon_list = new List<Pixbuf>();
+                    icon_list.append(new Pixbuf.from_file (icon));
+                    window.set_icon_list (icon_list);
                 }
-                catch (GLib.Error err) {
-                    print("Failed to load edge: %s\n", err.message);
-                }
-                break;
-            case "delete":
-                break;
-            default:
-                print("Invalid mode\n");
-                return 1;
+                window.start(edge.get_uri());
+                Gtk.main ();
+            }
+            catch (GLib.Error err) {
+                print("Failed to load edge: %s\n", err.message);
+            }
         }
     }
     catch (OptionError err) {

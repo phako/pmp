@@ -3,11 +3,11 @@ ACLOCAL_AMFLAGS=-I m4
 
 NULL=
 bin_PROGRAMS = \
-			   pmp/pmp \
+			   pmp/pmp-run \
 			   pmp/pmp-create \
 			   $(NULL)
 
-pmp_pmp_SOURCES = \
+pmp_pmp_run_SOURCES = \
 				  pmp/Edge.vala \
 				  pmp/MainWindow.vala \
 				  pmp/main.vala \
@@ -44,7 +44,7 @@ AM_CFLAGS = \
 			$(LIBSOUP_CFLAGS) \
 			$(NULL)
 
-pmp_pmp_LDFLAGS = \
+pmp_pmp_run_LDFLAGS = \
 				  $(LIBGTK_LIBS) \
 				  $(WEBKIT_LIBS) \
 				  $(LIBXML_LIBS) \
