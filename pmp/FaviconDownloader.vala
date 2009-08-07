@@ -69,7 +69,7 @@ public class Pmp.FaviconDownloader : Object {
             var fav_re = new Regex
                 ("<link\\s+rel\\s*=\\s*\"(shortcut )?icon[^>]+>",
                  RegexCompileFlags.CASELESS);
-            if (fav_re.match (body.data, RegexMatchFlags.ANCHORED, out mi)) {
+            if (fav_re.match (body.data, RegexMatchFlags.NOTBOL, out mi)) {
                 var icon = mi.fetch (0);
                 if (!icon.has_suffix ("/>")) {
                     icon += "</link>";
@@ -81,7 +81,9 @@ public class Pmp.FaviconDownloader : Object {
                     if (node != null) {
                         Attr *attr = node->has_prop("href");
                         if (attr != null) {
-                            download_icon (attr->children->content);
+                            var icon_uri = new Soup.URI.with_base (message.uri,
+                                attr->children->content);
+                            download_icon (icon_uri.to_string(false));
                         }
                     }
 
@@ -101,6 +103,12 @@ public class Pmp.FaviconDownloader : Object {
                 debug("No special favicon link found, trying %s", new_uri);
                 download_icon (new_uri);
             }
+        }
+        else {
+            warning("Failed to download site: %s, %s",
+                    message.uri.to_string(false),
+                    message.reason_phrase);
+            error();
         }
     }
 

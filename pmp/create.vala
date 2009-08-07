@@ -59,9 +59,9 @@ public class Pmp.EdgeCreator : Object {
                         if (icon_file == ":favicon") {
                             var dld = new FaviconDownloader (uri);
                             var file = edge.get_default_icon_file();
-                            dld.run(file);
                             dld.done.connect(on_fileicon_done);
                             dld.error.connect(on_fileicon_error);
+                            dld.run(file);
                             loop = new MainLoop (null, false);
                             loop.run();
                         }

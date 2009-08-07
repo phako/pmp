@@ -63,8 +63,10 @@ public class Pmp.MainWindow : Window {
                                            FileChooserAction.SAVE,
                                            STOCK_CANCEL,
                                            ResponseType.REJECT,
-                                           STOCK_OK,
+                                           STOCK_SAVE,
                                            ResponseType.ACCEPT);
+        debug ("Filename: %s", download.get_suggested_filename());
+        dialog.set_current_name (download.get_suggested_filename ());
         var res = dialog.run();
         dialog.hide();
         switch (res) {
