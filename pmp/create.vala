@@ -29,7 +29,7 @@ public class Pmp.EdgeCreator : Object {
 
     const OptionEntry[] options = {
         { "name", 'n', 0, OptionArg.STRING, ref name, "name of edge", "NAME" },
-        { "uri", 'u', 0, OptionArg.STRING, ref uri, "uri of the website to edge", "URI" },
+        { "url", 'u', 0, OptionArg.STRING, ref uri, "uri of the website to edge", "URI" },
         { "desktop", 'd', 0, OptionArg.NONE, ref create_desktop, "create desktop entry", null },
         { "icon", 'i', 0, OptionArg.FILENAME, ref icon_file, "use ICON as icon (use :favicon for the site's favicon", "ICON" },
         { null }
@@ -55,6 +55,7 @@ public class Pmp.EdgeCreator : Object {
                 if (uri != null) {
                     edge = new Edge(name);
                     edge.set_uri (uri);
+                    edge.save();
                     if (icon_file != null) {
                         if (icon_file == ":favicon") {
                             var dld = new FaviconDownloader (uri);
@@ -64,8 +65,45 @@ public class Pmp.EdgeCreator : Object {
                             dld.run(file);
                             loop = new MainLoop (null, false);
                             loop.run();
+                            icon_file = file.get_path ();
                         }
                     }
+                    if (create_desktop) {
+                        var desktop_dir = Environment.get_user_special_dir (UserDirectory.DESKTOP);
+                        var desktop_file = new KeyFile();
+                        desktop_file.set_string("Desktop Entry",
+                                                "Name",
+                                                name);
+                        desktop_file.set_string("Desktop Entry",
+                                                "Type",
+                                                "Application");
+                        desktop_file.set_string("Desktop Entry",
+                                                "Comment",
+                                                "Web Application");
+                        desktop_file.set_string("Desktop Entry",
+                                                "Exec",
+                                                "pmp-run --name=\"%s\"".printf(name));
+                        if (icon_file != null) {
+                            desktop_file.set_string("Desktop Entry",
+                                                    "Icon",
+                                                    icon_file);
+                        }
+                        var f = File.new_for_commandline_arg
+                            (Path.build_filename (desktop_dir,
+                                                  "%s.desktop".printf(name)));
+                        size_t len;
+                        string data = desktop_file.to_data(out len);
+                        f.replace_contents (data,
+                                len,
+                                null,
+                                false,
+                                FileCreateFlags.PRIVATE,
+                                null,
+                                null);
+                    }
+                }
+                else {
+                    print("Missing option: --url\n");
                 }
             }
         }
