@@ -108,7 +108,8 @@ public class Pmp.MainWindow : Window {
             AppInfo.launch_default_for_uri (request.get_uri(), null);
         }
         catch (GLib.Error err) {
-            warning("Failed to launch external browser for %s", request.get_uri());
+            warning("Failed to launch external browser for %s: %s",
+            request.get_uri(), err.message);
         }
 
         return true;
