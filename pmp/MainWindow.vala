@@ -105,7 +105,7 @@ public class Pmp.MainWindow : Window {
         decision.ignore();
 
         try {
-            AppInfo.launch_default_for_uri (request.get_uri(), null);
+            Gtk.show_uri (null, request.get_uri(), Gdk.CURRENT_TIME);
         }
         catch (GLib.Error err) {
             warning("Failed to launch external browser for %s: %s",
