@@ -66,9 +66,15 @@ public class Pmp.FaviconDownloader : Object {
         if (message.status_code == 200) {
             unowned MessageBody body = message.response_body;
             MatchInfo mi;
-            var fav_re = new Regex
-                ("<link\\s+rel\\s*=\\s*\"(shortcut )?icon[^>]+>",
-                 RegexCompileFlags.CASELESS);
+            Regex fav_re;
+            try {
+                fav_re = new Regex
+                    ("<link\\s+rel\\s*=\\s*\"(shortcut )?icon[^>]+>",
+                     RegexCompileFlags.CASELESS);
+            } catch (GLib.RegexError e) {
+                assert_not_reached ();
+            }
+
             if (fav_re.match (body.data, RegexMatchFlags.NOTBOL, out mi)) {
                 var icon = mi.fetch (0);
                 if (!icon.has_suffix ("/>")) {
