@@ -35,7 +35,7 @@ public class Pmp.EdgeCreator : Object {
         { null }
     };
 
-    private void on_fileicon_done() {
+    void on_fileicon_done() {
         edge.set_use_default_icon();
         try {
             edge.save();
@@ -45,8 +45,46 @@ public class Pmp.EdgeCreator : Object {
         loop.quit();
     }
 
-    private void on_fileicon_error() {
+    void on_fileicon_error() {
         loop.quit();
+    }
+
+    void create_desktop_file () {
+        var desktop_dir = Environment.get_user_special_dir (UserDirectory.DESKTOP);
+        var desktop_file = new KeyFile();
+        desktop_file.set_string("Desktop Entry",
+                "Name",
+                name);
+        desktop_file.set_string("Desktop Entry",
+                "Type",
+                "Application");
+        desktop_file.set_string("Desktop Entry",
+                "Comment",
+                "Web Application");
+        desktop_file.set_string("Desktop Entry",
+                "Exec",
+                "pmp-run --name=\"%s\"".printf(name));
+        if (icon_file != null) {
+            desktop_file.set_string("Desktop Entry",
+                    "Icon",
+                    icon_file);
+        }
+
+        var desktop_file_name = Path.build_filename (desktop_dir, "%s.desktop".printf (name));
+        var f = File.new_for_commandline_arg (desktop_file_name);
+        size_t len;
+        string data = desktop_file.to_data (out len);
+        try {
+            f.replace_contents (data,
+                                len,
+                                null,
+                                false,
+                                FileCreateFlags.PRIVATE,
+                                null,
+                                null);
+        } catch (GLib.Error e) {
+            warning ("Failed to create desktop file: %s", e.message);
+        }
     }
 
     public void run(string[] args) {
@@ -57,54 +95,24 @@ public class Pmp.EdgeCreator : Object {
             opt_ctx.parse (ref args);
             if (name != null) {
                 if (uri != null) {
-                    edge = new Edge(name);
+                    edge = new Edge (name);
                     edge.set_uri (uri);
                     try {
                         edge.save();
                         if (icon_file != null) {
                             if (icon_file == ":favicon") {
                                 var dld = new FaviconDownloader (uri);
-                                var file = edge.get_default_icon_file();
-                                dld.done.connect(on_fileicon_done);
-                                dld.error.connect(on_fileicon_error);
-                                dld.run(file);
+                                var file = edge.get_default_icon_file ();
+                                dld.done.connect (on_fileicon_done);
+                                dld.error.connect (on_fileicon_error);
+                                dld.run (file);
                                 loop = new MainLoop (null, false);
                                 loop.run();
                                 icon_file = file.get_path ();
                             }
                         }
                         if (create_desktop) {
-                            var desktop_dir = Environment.get_user_special_dir (UserDirectory.DESKTOP);
-                            var desktop_file = new KeyFile();
-                            desktop_file.set_string("Desktop Entry",
-                                    "Name",
-                                    name);
-                            desktop_file.set_string("Desktop Entry",
-                                    "Type",
-                                    "Application");
-                            desktop_file.set_string("Desktop Entry",
-                                    "Comment",
-                                    "Web Application");
-                            desktop_file.set_string("Desktop Entry",
-                                    "Exec",
-                                    "pmp-run --name=\"%s\"".printf(name));
-                            if (icon_file != null) {
-                                desktop_file.set_string("Desktop Entry",
-                                        "Icon",
-                                        icon_file);
-                            }
-                            var f = File.new_for_commandline_arg
-                                (Path.build_filename (desktop_dir,
-                                                      "%s.desktop".printf(name)));
-                            size_t len;
-                            string data = desktop_file.to_data(out len);
-                            f.replace_contents (data,
-                                    len,
-                                    null,
-                                    false,
-                                    FileCreateFlags.PRIVATE,
-                                    null,
-                                    null);
+                            create_desktop_file ();
                         }
                     } catch (GLib.Error e) {
                         warning ("Failed to save edge: %s", e.message);
