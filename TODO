@@ -2,3 +2,5 @@
 - Implement password saving
 - implement "scriptlets"
 - GnuPG support?
+- write edge management tool
+    - create "Edge packages"
