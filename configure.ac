@@ -36,13 +36,7 @@ if test "x$enable_vala" = "xyes" ; then
         AC_MSG_ERROR([Cannot find the "valac" compiler in your PATH])
     fi
 
-    VAPIDIR=$(pkg-config --variable=vapidir vala-1.0)
-    AC_CHECK_FILE("${VAPIDIR}/gtk+-2.0.vapi",
-                 true,
-                 [AC_MSG_ERROR("Unable to find Vala bindings for gtk+-2.0")])
-    AC_CHECK_FILE("${VAPIDIR}/webkit-1.0.vapi",
-                 true,
-                 [AC_MSG_ERROR("Unable to find Vala bindings for webkit-1.0")])
+    VALA_CHECK_PACKAGES([gtk+-2.0 webkit-1.0])
 fi
 
 AM_SILENT_RULES([yes])
