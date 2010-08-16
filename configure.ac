@@ -1,4 +1,4 @@
-AC_INIT([pmp], [0.1], [mail@jensge.org], [pmp])
+AC_INIT([pmp], [0.2], [mail@jensge.org], [pmp])
 AM_INIT_AUTOMAKE([1.11 dist-bzip2])
 AC_CONFIG_SRCDIR([pmp/main.vala])
 AC_CONFIG_HEADERS([config.h])
