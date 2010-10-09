@@ -41,7 +41,7 @@ public class Pmp.FaviconDownloader : Object {
         if (message.status_code == 200) {
             try {
                 debug("file: %s", this.file.get_path ());
-                file.replace_contents (message.response_body.data,
+                file.replace_contents ((string)message.response_body.data,
                                        (size_t)message.response_body.length,
                                        null,
                                        false,
@@ -75,7 +75,7 @@ public class Pmp.FaviconDownloader : Object {
                 assert_not_reached ();
             }
 
-            if (fav_re.match (body.data, RegexMatchFlags.NOTBOL, out mi)) {
+            if (fav_re.match ((string)body.data, RegexMatchFlags.NOTBOL, out mi)) {
                 var icon = mi.fetch (0);
                 if (!icon.has_suffix ("/>")) {
                     icon += "</link>";

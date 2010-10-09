@@ -39,9 +39,10 @@ public class Pmp.Edge : Object {
             "edge.conf");
         settings = new KeyFile ();
         debug("Filename: %s", this.file_path);
+
     }
 
-    public void load() throws Error {
+    public void load() throws GLib.Error {
         if (!this.settings.load_from_file (this.file_path,
                                            KeyFileFlags.NONE)) {
             throw new Error.FILE_ERROR("Failed to load edge configuration from file %s", file_path);
@@ -52,7 +53,7 @@ public class Pmp.Edge : Object {
         settings.set_string("Edge", "uri", uri);
     }
 
-    public string get_uri () {
+    public string get_uri () throws GLib.Error {
         return settings.get_string("Edge", "uri");
     }
 
@@ -86,7 +87,7 @@ public class Pmp.Edge : Object {
                 get_default_icon_file().get_path());
     }
 
-    public string get_icon() {
+    public string get_icon() throws GLib.Error {
         return settings.get_string("Edge", "icon");
     }
 }
