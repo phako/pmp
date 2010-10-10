@@ -23,6 +23,7 @@ public class Pmp.EdgeCreator : Object {
     private static string name;
     private static string uri;
     private static bool create_desktop;
+    private static bool create_launcher;
     private static string icon_file;
     private MainLoop loop;
     private Edge edge;
@@ -31,6 +32,7 @@ public class Pmp.EdgeCreator : Object {
         { "name", 'n', 0, OptionArg.STRING, ref name, "name of edge", "NAME" },
         { "url", 'u', 0, OptionArg.STRING, ref uri, "uri of the website to edge", "URI" },
         { "desktop", 'd', 0, OptionArg.NONE, ref create_desktop, "create desktop entry", null },
+        { "launcher", 'l', 0, OptionArg.NONE, ref create_launcher, "create an application launcher", null },
         { "icon", 'i', 0, OptionArg.FILENAME, ref icon_file, "use ICON as icon (use :favicon for the site's favicon", "ICON" },
         { null }
     };
@@ -49,8 +51,20 @@ public class Pmp.EdgeCreator : Object {
         loop.quit();
     }
 
+    void create_application_launcher () {
+        var app_dir = Environment.get_user_data_dir ();
+        app_dir = Path.build_filename (app_dir, "applications");
+
+        this.create_launcher_file (app_dir);
+    }
+
     void create_desktop_file () {
         var desktop_dir = Environment.get_user_special_dir (UserDirectory.DESKTOP);
+
+        this.create_launcher_file (desktop_dir);
+    }
+
+    void create_launcher_file (string dir) {
         var desktop_file = new KeyFile();
         desktop_file.set_string("Desktop Entry",
                 "Name",
@@ -70,7 +84,7 @@ public class Pmp.EdgeCreator : Object {
                     icon_file);
         }
 
-        var desktop_file_name = Path.build_filename (desktop_dir, "%s.desktop".printf (name));
+        var desktop_file_name = Path.build_filename (dir, "%s.desktop".printf (name));
         var f = File.new_for_commandline_arg (desktop_file_name);
         size_t len;
         string data = desktop_file.to_data (out len);
@@ -113,6 +127,10 @@ public class Pmp.EdgeCreator : Object {
                         }
                         if (create_desktop) {
                             create_desktop_file ();
+                        }
+
+                        if (create_launcher) {
+                            create_application_launcher ();
                         }
                     } catch (GLib.Error e) {
                         warning ("Failed to save edge: %s", e.message);

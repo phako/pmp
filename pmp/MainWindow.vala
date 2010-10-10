@@ -149,7 +149,7 @@ public class Pmp.MainWindow : Window {
                 canonical_frame_host, canonical_request_host);
 
         // check if this link will leave the domain
-        if (canonical_frame_host != null &&
+        if (canonical_frame_host != null && 
             canonical_frame_host != canonical_request_host) {
 
             return on_policy_decision_requested (frame,
