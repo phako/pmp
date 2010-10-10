@@ -95,7 +95,7 @@ public class Pmp.Edge : Object {
                 get_default_icon_file().get_path());
     }
 
-    public string get_icon() throws GLib.Error {
+    public string get_icon() {
         return settings.get_string("Edge", "icon");
     }
 }

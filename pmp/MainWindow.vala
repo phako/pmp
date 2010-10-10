@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Jens Georg <mail@jensge.org>
+ * Copyright (C) 2009,2010 Jens Georg <mail@jensge.org>
  *
  * This file is part of pmp.
  *
@@ -25,11 +25,14 @@ public class Pmp.MainWindow : Window {
     private WebView web_view;
     private Statusbar statusbar;
     private uint context_id;
+    private Regex local_regex;
 
     public MainWindow (string title) {
         this.title = "PMP - Poor man's Prism: %s".printf (title);
         set_default_size (1024, 768);
         var vbox = new VBox (false, 5);
+
+        this.local_regex = new Regex ("([^.]+)\\.([^.]+)$");
 
         this.web_view = new WebView ();
         this.add (vbox);
@@ -63,18 +66,20 @@ public class Pmp.MainWindow : Window {
                                             ResponseType.REJECT,
                                             STOCK_SAVE,
                                             ResponseType.ACCEPT);
-        debug ("Filename: %s", download.get_suggested_filename());
+
         dialog.set_current_name (download.get_suggested_filename ());
         var res = dialog.run ();
         dialog.hide ();
         switch (res) {
             case ResponseType.ACCEPT:
-                download.set_destination_uri (dialog.get_uri());
+                download.set_destination_uri (dialog.get_uri ());
                 retval = true;
+
                 break;
         }
 
-        dialog.destroy();
+        dialog.destroy ();
+
         return retval;
     }
 
@@ -118,16 +123,41 @@ public class Pmp.MainWindow : Window {
                                             NetworkRequest request,
                                             WebNavigationAction action,
                                             WebPolicyDecision decision) {
-        var frame_uri = new Soup.URI (frame.get_uri ());
+        MatchInfo frame_match;
+        string canonical_frame_host = null;
+        string canonical_request_host = null;
+
+        if (frame.get_uri () == null ||
+            request.get_message () == null) {
+            return false;
+        }
+
+        var frame_host = new Soup.URI (frame.get_uri ()).host;
+        var request_host = request.get_message ().get_uri ().host;
+
+        if (frame_host != null) {
+            if (this.local_regex.match (frame_host, 0, out frame_match)) {
+                canonical_frame_host = frame_match.fetch (1);
+            }
+
+            if (this.local_regex.match (request_host, 0, out frame_match)) {
+                canonical_request_host = frame_match.fetch (1);
+            }
+        }
+
+        debug ("canonical_frame_host: %s => canonical_request_host: %s",
+                canonical_frame_host, canonical_request_host);
 
         // check if this link will leave the domain
-        if (frame_uri.host != null && 
-            request.get_message ().get_uri ().host != frame_uri.host) {
-            return on_policy_decision_requested(frame,
-                                                request,
-                                                action,
-                                                decision);
+        if (canonical_frame_host != null &&
+            canonical_frame_host != canonical_request_host) {
+
+            return on_policy_decision_requested (frame,
+                                                 request,
+                                                 action,
+                                                 decision);
         }
+
         return false;
     }
 
