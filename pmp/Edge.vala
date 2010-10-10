@@ -28,18 +28,26 @@ public class Pmp.Edge : Object {
     private KeyFile settings;
     private string edge_path;
 
+    private static string edge_directory;
+
+    public static string get_edge_directory () {
+        if (Edge.edge_directory == null) {
+            Edge.edge_directory = Path.build_filename (
+                                        Environment.get_user_config_dir(),
+                                        "pmp");
+        }
+
+        return Edge.edge_directory;
+    }
+
     public Edge(string name) {
         this.name = name;
-        this.edge_path = Path.build_filename (
-            Environment.get_user_config_dir(),
-            "pmp",
-            name);
-        this.file_path = Path.build_filename (
-            this.edge_path,
-            "edge.conf");
+        this.edge_path = Path.build_filename (get_edge_directory (),
+                                              name);
+        this.file_path = Path.build_filename (this.edge_path,
+                                              "edge.conf");
         settings = new KeyFile ();
         debug("Filename: %s", this.file_path);
-
     }
 
     public void load() throws GLib.Error {
